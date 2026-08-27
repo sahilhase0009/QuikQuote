@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotations — QuikQuote</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-quoteflow sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand me-4" href="/dashboard"><i class="bi bi-file-earmark-text-fill me-2"></i>Quik<span>Quote</span></a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/dashboard}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link active" th:href="@{/quotations}">Quotations</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/customers}">Customers</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/products}">Products & Services</a></li>
+                    <li class="nav-item"><a class="nav-link text-warning" th:href="@{/ai-assistant}">AI Assistant</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/business-profile}">Business Profile</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <a th:href="@{/quotations/new}" class="btn btn-primary-custom btn-sm"><i class="bi bi-plus-lg me-1"></i>New Quotation</a>
+                    <a th:href="@{/logout}" class="btn btn-outline-light btn-sm"><i class="bi bi-box-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold mb-0">Quotations History</h3>
+                <p class="text-muted small mb-0">Track, manage, duplicate, and download PDF quotations</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:href="@{/ai-assistant}" class="btn btn-ai"><i class="bi bi-stars me-2"></i>AI Assistant</a>
+                <a th:href="@{/quotations/new}" class="btn btn-primary-custom"><i class="bi bi-plus-lg me-2"></i>New Quotation</a>
+            </div>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i><span th:text="${successMessage}">Success</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Filter Tabs & Search Bar -->
+        <div class="card card-custom p-3 mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div class="nav nav-pills gap-1">
+                    <a th:href="@{/quotations}" th:class="${currentStatus == null ? 'nav-link active bg-primary text-white' : 'nav-link text-muted'}">All</a>
+                    <a th:each="st : ${statuses}" 
+                       th:href="@{'/quotations?status=' + ${st.name()}}" 
+                       th:class="${currentStatus != null && currentStatus == st ? 'nav-link active bg-primary text-white' : 'nav-link text-muted'}" 
+                       th:text="${st.name()}">DRAFT</a>
+                </div>
+
+                <form th:action="@{/quotations}" method="get" class="d-flex gap-2" style="max-width: 320px;">
+                    <input type="hidden" name="status" th:value="${currentStatus}" th:if="${currentStatus != null}">
+                    <input type="text" class="form-control form-control-sm" name="search" th:value="${searchQuery}" placeholder="Search quotation # or customer...">
+                    <button type="submit" class="btn btn-sm btn-secondary">Search</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quotations Table -->
+        <div class="card card-custom p-4">
+            <div class="table-responsive">
+                <table class="table table-custom mb-0">
+                    <thead>
+                        <tr>
+                            <th>Quotation #</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Valid Until</th>
+                            <th>Grand Total</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="q : ${quotations}">
+                            <td class="fw-bold text-primary">
+                                <a th:href="@{'/quotations/' + ${q.id}}" class="text-decoration-none" th:text="${q.quotationNumber}">QT-2026-0001</a>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark" th:text="${q.customerName}">Rahul Patil</div>
+                                <div class="text-muted small" th:text="${q.customerCompanyName}">Apex Tech</div>
+                            </td>
+                            <td th:text="${#temporals.format(q.quotationDate, 'dd MMM yyyy')}">27 Aug 2026</td>
+                            <td th:text="${q.validUntil != null ? #temporals.format(q.validUntil, 'dd MMM yyyy') : '-'}">11 Sep 2026</td>
+                            <td class="fw-bold text-dark" th:text="'₹' + ${#numbers.formatDecimal(q.grandTotal, 1, 'COMMA', 2, 'POINT')}">₹94,400.00</td>
+                            <td>
+                                <span th:class="'badge badge-status badge-' + ${q.status.name()}" th:text="${q.status.name()}">SENT</span>
+                            </td>
+                            <td class="text-end">
+                                <a th:href="@{'/quotations/' + ${q.id}}" class="btn btn-sm btn-light me-1" title="View Details"><i class="bi bi-eye"></i></a>
+                                <a th:href="@{'/quotations/edit/' + ${q.id}}" class="btn btn-sm btn-light me-1" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a th:href="@{'/quotations/' + ${q.id} + '/pdf'}" target="_blank" class="btn btn-sm btn-outline-secondary me-1" title="Download PDF"><i class="bi bi-file-earmark-pdf"></i></a>
+                                <form th:action="@{'/quotations/' + ${q.id} + '/duplicate'}" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-info me-1" title="Duplicate Quotation"><i class="bi bi-copy"></i></button>
+                                </form>
+                                <form th:action="@{'/quotations/delete/' + ${q.id}}" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this quotation?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(quotations)}">
+                            <td colspan="7" class="text-center py-4 text-muted">No quotations found. Click "+ New Quotation" to create your first quotation.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>

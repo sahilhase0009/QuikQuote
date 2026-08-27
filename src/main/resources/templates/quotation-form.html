@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${isEdit ? 'Edit Quotation — QuikQuote' : 'New Quotation — QuikQuote'}">Quotation Builder</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-quoteflow sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand me-4" href="/dashboard"><i class="bi bi-file-earmark-text-fill me-2"></i>Quik<span>Quote</span></a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/dashboard}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link active" th:href="@{/quotations}">Quotations</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/customers}">Customers</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/products}">Products & Services</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 py-4">
+        <div class="mb-3">
+            <a th:href="@{/quotations}" class="text-decoration-none text-muted small"><i class="bi bi-arrow-left me-1"></i>Back to Quotations</a>
+        </div>
+
+        <form th:action="${isEdit ? '/quotations/edit/' + quotation.id : '/quotations'}" th:object="${quotation}" method="post" id="quotation-form">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold mb-0" th:text="${isEdit ? 'Edit Quotation ' + quotation.quotationNumber : 'Create New Quotation'}">Quotation Builder</h3>
+                    <p class="text-muted small mb-0">Fill in details or use catalog items to build a professional quotation</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a th:href="@{/quotations}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary-custom px-4"><i class="bi bi-check2-circle me-2"></i>Save Quotation</button>
+                </div>
+            </div>
+
+            <!-- Customer & Dates Section -->
+            <div class="card card-custom p-4 mb-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-person me-2 text-primary"></i>Customer & Quotation Info</h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="customerId" class="form-label fw-semibold text-muted small">Select Customer *</label>
+                        <select class="form-select" th:field="*{customerId}" required>
+                            <option value="">-- Choose Customer --</option>
+                            <option th:each="c : ${customers}" th:value="${c.id}" th:text="${c.name + (c.companyName != null ? ' (' + c.companyName + ')' : '')}">Rahul Patil</option>
+                        </select>
+                        <div class="mt-1">
+                            <a th:href="@{/customers/new}" target="_blank" class="small text-primary text-decoration-none"><i class="bi bi-plus me-1"></i>Add New Customer</a>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="quotationDate" class="form-label fw-semibold text-muted small">Quotation Date *</label>
+                        <input type="date" class="form-control" th:field="*{quotationDate}" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="validUntil" class="form-label fw-semibold text-muted small">Valid Until</label>
+                        <input type="date" class="form-control" th:field="*{validUntil}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quotation Line Items Table Card -->
+            <div class="card card-custom p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-list-check me-2 text-primary"></i>Quotation Items</h5>
+                    <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" id="add-item-btn"><i class="bi bi-plus-lg me-1"></i>Add Item Row</button>
+                </div>
+
+                <div class="table-responsive mb-3">
+                    <table class="table align-middle" id="items-table">
+                        <thead class="bg-light">
+                            <tr class="small text-muted text-uppercase">
+                                <th style="width: 25%;">Select Catalog Item / Name</th>
+                                <th style="width: 20%;">Description</th>
+                                <th style="width: 10%;">Qty</th>
+                                <th style="width: 10%;">Unit</th>
+                                <th style="width: 12%;">Price (₹)</th>
+                                <th style="width: 8%;">Tax %</th>
+                                <th style="width: 10%;">Total (₹)</th>
+                                <th style="width: 5%;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="quotation-items-container">
+                            <!-- Loop over existing or default line items -->
+                            <tr th:each="item, iterStat : *{items}" class="item-row">
+                                <td>
+                                    <!-- Catalog Select -->
+                                    <select class="form-select form-select-sm mb-1 product-select">
+                                        <option value="">-- Catalog Item (Optional) --</option>
+                                        <option th:each="p : ${products}" 
+                                                th:value="${p.id}" 
+                                                th:text="${p.name + ' (₹' + p.price + ')'}"
+                                                th:data-price="${p.price}"
+                                                th:data-tax="${p.taxPercentage}"
+                                                th:data-unit="${p.unit}"
+                                                th:data-name="${p.name}"
+                                                th:data-desc="${p.description}"
+                                                th:selected="${item.productId != null && item.productId == p.id}">Office Chair</option>
+                                    </select>
+                                    <input type="hidden" th:field="*{items[__${iterStat.index}__].productId}">
+                                    <input type="text" class="form-control form-control-sm item-name" th:field="*{items[__${iterStat.index}__].itemName}" placeholder="Item Name *" required>
+                                </td>
+                                <td>
+                                    <textarea class="form-control form-control-sm item-desc" th:field="*{items[__${iterStat.index}__].description}" rows="2" placeholder="Item details..."></textarea>
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm item-qty" th:field="*{items[__${iterStat.index}__].quantity}" min="1" required>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm item-unit" th:field="*{items[__${iterStat.index}__].unit}" placeholder="Piece">
+                                </td>
+                                <td>
+                                    <input type="number" step="0.01" class="form-control form-control-sm item-price" th:field="*{items[__${iterStat.index}__].unitPrice}" required>
+                                </td>
+                                <td>
+                                    <input type="number" step="0.01" class="form-control form-control-sm item-tax" th:field="*{items[__${iterStat.index}__].taxPercentage}">
+                                </td>
+                                <td class="fw-bold text-end pe-2">
+                                    <span class="row-total">₹0.00</span>
+                                </td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm btn-link text-danger p-0 remove-row-btn"><i class="bi bi-trash fs-5"></i></button>
+                                </td>
+                            </tr>
+
+                            <!-- Fallback default empty row if list is empty -->
+                            <tr th:if="${#lists.isEmpty(quotation.items)}" class="item-row">
+                                <td>
+                                    <select class="form-select form-select-sm mb-1 product-select">
+                                        <option value="">-- Catalog Item (Optional) --</option>
+                                        <option th:each="p : ${products}" 
+                                                th:value="${p.id}" 
+                                                th:text="${p.name + ' (₹' + p.price + ')'}"
+                                                th:data-price="${p.price}"
+                                                th:data-tax="${p.taxPercentage}"
+                                                th:data-unit="${p.unit}"
+                                                th:data-name="${p.name}"
+                                                th:data-desc="${p.description}">Office Chair</option>
+                                    </select>
+                                    <input type="hidden" name="items[0].productId">
+                                    <input type="text" class="form-control form-control-sm item-name" name="items[0].itemName" placeholder="Item Name *" required>
+                                </td>
+                                <td>
+                                    <textarea class="form-control form-control-sm item-desc" name="items[0].description" rows="2" placeholder="Item details..."></textarea>
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm item-qty" name="items[0].quantity" value="1" min="1" required>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm item-unit" name="items[0].unit" value="Piece">
+                                </td>
+                                <td>
+                                    <input type="number" step="0.01" class="form-control form-control-sm item-price" name="items[0].unitPrice" value="0.00" required>
+                                </td>
+                                <td>
+                                    <input type="number" step="0.01" class="form-control form-control-sm item-tax" name="items[0].taxPercentage" value="18.00">
+                                </td>
+                                <td class="fw-bold text-end pe-2">
+                                    <span class="row-total">₹0.00</span>
+                                </td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm btn-link text-danger p-0 remove-row-btn"><i class="bi bi-trash fs-5"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="row justify-content-end">
+                    <div class="col-md-5">
+                        <div class="bg-light p-3 rounded border">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Subtotal:</span>
+                                <span class="fw-semibold" id="summary-subtotal">₹0.00</span>
+                            </div>
+
+                            <div class="row align-items-center mb-2">
+                                <div class="col-6">
+                                    <select class="form-select form-select-sm" th:field="*{discountType}" id="discountType">
+                                        <option value="PERCENTAGE">Discount (%)</option>
+                                        <option value="FIXED">Discount (₹)</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" step="0.01" class="form-control form-control-sm text-end" th:field="*{discountValue}" id="discountValue" placeholder="0">
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Discount Amount:</span>
+                                <span class="text-danger fw-semibold" id="summary-discount">- ₹0.00</span>
+                            </div>
+
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Tax Amount:</span>
+                                <span class="fw-semibold" id="summary-tax">₹0.00</span>
+                            </div>
+
+                            <hr class="my-2">
+
+                            <div class="d-flex justify-content-between fs-5 fw-bold text-dark">
+                                <span>Grand Total:</span>
+                                <span class="text-primary" id="summary-total">₹0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes & Terms -->
+            <div class="card card-custom p-4 mb-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-journal-text me-2 text-primary"></i>Notes & Terms</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="notes" class="form-label fw-semibold text-muted small">Notes for Customer</label>
+                        <textarea class="form-control" th:field="*{notes}" rows="4" placeholder="Delivery timeline, payment terms, or special instructions..."></textarea>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="termsAndConditions" class="form-label fw-semibold text-muted small">Terms & Conditions</label>
+                        <textarea class="form-control" th:field="*{termsAndConditions}" rows="4" placeholder="1. 50% advance required upon confirmation..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Controls -->
+            <div class="d-flex justify-content-end gap-2 mb-5">
+                <a th:href="@{/quotations}" class="btn btn-outline-secondary px-4">Cancel</a>
+                <button type="submit" class="btn btn-primary-custom px-5 py-2 fs-6"><i class="bi bi-check2-circle me-2"></i>Save Quotation</button>
+            </div>
+
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>

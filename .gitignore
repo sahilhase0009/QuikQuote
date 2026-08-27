@@ -1,0 +1,19 @@
+# Target / Compiled Build files
+target/
+*.class
+
+# Environment / Secret Files
+.env
+*.log
+
+# IDE Files
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# OS Files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${isEdit ? 'Edit Customer — QuikQuote' : 'New Customer — QuikQuote'}">Customer Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-quoteflow sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand me-4" href="/dashboard"><i class="bi bi-file-earmark-text-fill me-2"></i>Quik<span>Quote</span></a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/dashboard}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/quotations}">Quotations</a></li>
+                    <li class="nav-item"><a class="nav-link active" th:href="@{/customers}">Customers</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/products}">Products & Services</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4" style="max-width: 720px;">
+        <div class="mb-3">
+            <a th:href="@{/customers}" class="text-decoration-none text-muted small"><i class="bi bi-arrow-left me-1"></i>Back to Customers</a>
+        </div>
+
+        <div class="card card-custom p-4">
+            <h4 class="fw-bold mb-4" th:text="${isEdit ? 'Edit Customer Details' : 'Add New Customer'}">Customer Form</h4>
+
+            <form th:action="${isEdit ? '/customers/edit/' + customer.id : '/customers'}" th:object="${customer}" method="post">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="name" class="form-label fw-semibold text-muted small">Customer Name *</label>
+                        <input type="text" class="form-control" th:field="*{name}" placeholder="Amit Sharma" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="companyName" class="form-label fw-semibold text-muted small">Company Name</label>
+                        <input type="text" class="form-control" th:field="*{companyName}" placeholder="Apex Technologies">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="email" class="form-label fw-semibold text-muted small">Email Address</label>
+                        <input type="email" class="form-control" th:field="*{email}" placeholder="amit@apextech.com">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="phone" class="form-label fw-semibold text-muted small">Phone Number</label>
+                        <input type="text" class="form-control" th:field="*{phone}" placeholder="+91 9820011223">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="address" class="form-label fw-semibold text-muted small">Billing Address</label>
+                        <input type="text" class="form-control" th:field="*{address}" placeholder="Building 4, SEEPZ, Andheri East">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="city" class="form-label fw-semibold text-muted small">City</label>
+                        <input type="text" class="form-control" th:field="*{city}" placeholder="Mumbai">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="state" class="form-label fw-semibold text-muted small">State</label>
+                        <input type="text" class="form-control" th:field="*{state}" placeholder="Maharashtra">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="pincode" class="form-label fw-semibold text-muted small">Pincode</label>
+                        <input type="text" class="form-control" th:field="*{pincode}" placeholder="400096">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="notes" class="form-label fw-semibold text-muted small">Customer Notes</label>
+                        <textarea class="form-control" th:field="*{notes}" rows="3" placeholder="Key corporate customer..."></textarea>
+                    </div>
+
+                    <div class="col-12 text-end mt-4">
+                        <a th:href="@{/customers}" class="btn btn-outline-secondary me-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary-custom px-4" th:text="${isEdit ? 'Update Customer' : 'Save Customer'}">Save</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

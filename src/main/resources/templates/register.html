@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account — QuikQuote</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="bg-light">
+
+    <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100 py-5">
+        <div class="mb-4 text-center">
+            <a href="/" class="navbar-brand text-dark fs-2">
+                <i class="bi bi-file-earmark-text-fill text-primary me-2"></i>Quik<span class="text-primary">Quote</span>
+            </a>
+            <p class="text-muted small mb-0">Start creating professional quotations in minutes</p>
+        </div>
+
+        <div class="card card-custom p-4 shadow-sm" style="max-width: 480px; width: 100%;">
+
+            <div th:if="${errorMessage}" class="alert alert-danger py-2 small" th:text="${errorMessage}"></div>
+
+            <form th:action="@{/register}" th:object="${registerRequest}" method="post">
+                <div class="mb-3">
+                    <label for="name" class="form-label fw-semibold text-muted small">Your Name *</label>
+                    <input type="text" class="form-control" th:field="*{name}" placeholder="Rahul Patil" required>
+                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="businessName" class="form-label fw-semibold text-muted small">Business Name *</label>
+                    <input type="text" class="form-control" th:field="*{businessName}" placeholder="Prime Office Solutions" required>
+                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('businessName')}" th:errors="*{businessName}"></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label fw-semibold text-muted small">Email Address *</label>
+                        <input type="email" class="form-control" th:field="*{email}" placeholder="sales@business.com" required>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="phone" class="form-label fw-semibold text-muted small">Phone Number</label>
+                        <input type="text" class="form-control" th:field="*{phone}" placeholder="+91 9876543210">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label fw-semibold text-muted small">Password *</label>
+                    <input type="password" class="form-control" th:field="*{password}" placeholder="At least 6 characters" required>
+                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary-custom w-100 py-2 mt-2">Create Account</button>
+            </form>
+
+            <div class="text-center mt-4 pt-3 border-top">
+                <span class="text-muted small">Already have an account?</span>
+                <a th:href="@{/login}" class="fw-semibold text-primary ms-1 small">Sign In</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
