@@ -50,8 +50,12 @@
 
                 <!-- Action Controls -->
                 <div class="d-flex flex-wrap gap-2">
-                    <a th:href="@{'/quotations/' + ${quotation.id} + '/pdf'}" target="_blank" class="btn btn-primary-custom">
-                        <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
+                    <a th:href="@{'/quotations/' + ${quotation.id} + '/pdf?inline=false'}" th:download="${quotation.quotationNumber + '.pdf'}" class="btn btn-primary-custom">
+                        <i class="bi bi-download me-1"></i>Download PDF
+                    </a>
+
+                    <a th:href="@{'/quotations/' + ${quotation.id} + '/pdf?inline=true'}" target="_blank" class="btn btn-outline-primary">
+                        <i class="bi bi-eye me-1"></i>View PDF
                     </a>
 
                     <button class="btn btn-ai" data-bs-toggle="modal" data-bs-target="#followupModal">
@@ -211,6 +215,24 @@
                     <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary-custom btn-sm" id="copy-followup-btn"><i class="bi bi-clipboard me-1"></i>Copy Message</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sticky Mobile PDF Download Floating Action Bar -->
+    <div class="d-block d-md-none fixed-bottom bg-dark text-white p-3 shadow-lg border-top">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div>
+                <div class="fw-bold text-truncate" style="max-width: 150px;" th:text="${quotation.quotationNumber}">QT-2026-0001</div>
+                <div class="small text-muted" th:text="'₹' + ${#numbers.formatDecimal(quotation.grandTotal, 1, 'COMMA', 2, 'POINT')}">₹94,400.00</div>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:href="@{'/quotations/' + ${quotation.id} + '/pdf?inline=false'}" th:download="${quotation.quotationNumber + '.pdf'}" class="btn btn-primary-custom btn-sm px-3">
+                    <i class="bi bi-download me-1"></i>Save PDF
+                </a>
+                <a th:href="@{'/quotations/' + ${quotation.id} + '/pdf?inline=true'}" target="_blank" class="btn btn-outline-light btn-sm px-2">
+                    <i class="bi bi-eye"></i>
+                </a>
             </div>
         </div>
     </div>

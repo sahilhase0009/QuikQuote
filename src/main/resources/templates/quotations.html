@@ -99,7 +99,8 @@
                             <td class="text-end">
                                 <a th:href="@{'/quotations/' + ${q.id}}" class="btn btn-sm btn-light me-1" title="View Details"><i class="bi bi-eye"></i></a>
                                 <a th:href="@{'/quotations/edit/' + ${q.id}}" class="btn btn-sm btn-light me-1" title="Edit"><i class="bi bi-pencil"></i></a>
-                                <a th:href="@{'/quotations/' + ${q.id} + '/pdf'}" target="_blank" class="btn btn-sm btn-outline-secondary me-1" title="Download PDF"><i class="bi bi-file-earmark-pdf"></i></a>
+                                <a th:href="@{'/quotations/' + ${q.id} + '/pdf?inline=false'}" th:download="${q.quotationNumber + '.pdf'}" class="btn btn-sm btn-outline-primary me-1" title="Download PDF to Phone/PC"><i class="bi bi-download"></i></a>
+                                <a th:href="@{'/quotations/' + ${q.id} + '/pdf?inline=true'}" target="_blank" class="btn btn-sm btn-outline-secondary me-1" title="View PDF"><i class="bi bi-file-earmark-pdf"></i></a>
                                 <form th:action="@{'/quotations/' + ${q.id} + '/duplicate'}" method="post" class="d-inline">
                                     <button type="submit" class="btn btn-sm btn-outline-info me-1" title="Duplicate Quotation"><i class="bi bi-copy"></i></button>
                                 </form>

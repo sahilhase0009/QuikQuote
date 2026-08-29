@@ -155,7 +155,8 @@
                             </td>
                             <td class="text-end">
                                 <a th:href="@{'/quotations/' + ${q.id}}" class="btn btn-sm btn-light me-1" title="View Details"><i class="bi bi-eye"></i></a>
-                                <a th:href="@{'/quotations/' + ${q.id} + '/pdf'}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Download PDF"><i class="bi bi-file-earmark-pdf"></i></a>
+                                <a th:href="@{'/quotations/' + ${q.id} + '/pdf?inline=false'}" th:download="${q.quotationNumber + '.pdf'}" class="btn btn-sm btn-outline-primary me-1" title="Download PDF to Phone/PC"><i class="bi bi-download"></i></a>
+                                <a th:href="@{'/quotations/' + ${q.id} + '/pdf?inline=true'}" target="_blank" class="btn btn-sm btn-outline-secondary" title="View PDF"><i class="bi bi-file-earmark-pdf"></i></a>
                             </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(stats.recentQuotations)}">
