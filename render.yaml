@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: quikquote
+    env: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: MOCK_AI_MODE
+        value: true
