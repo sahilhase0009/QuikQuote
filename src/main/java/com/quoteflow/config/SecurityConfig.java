@@ -44,7 +44,8 @@ public class SecurityConfig {
                     "/js/**",
                     "/images/**",
                     "/h2-console/**",
-                    "/error"
+                    "/error",
+                    "/quotations/*/pdf"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
