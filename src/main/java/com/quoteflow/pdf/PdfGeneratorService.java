@@ -24,6 +24,10 @@ public class PdfGeneratorService {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMM yyyy");
 
     public byte[] generateQuotationPdf(Quotation quotation) {
+        if (quotation == null) {
+            throw new IllegalArgumentException("Quotation cannot be null");
+        }
+
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         Document document = new Document(PageSize.A4, 36, 36, 36, 36);
 
@@ -58,18 +62,22 @@ public class PdfGeneratorService {
             PdfPCell businessCell = new PdfPCell();
             businessCell.setBorder(Rectangle.NO_BORDER);
 
-            Paragraph busName = new Paragraph(business.getBusinessName(), headerFont);
+            String busNameStr = (business != null && business.getBusinessName() != null && !business.getBusinessName().isBlank())
+                    ? business.getBusinessName() : "Business Profile";
+            Paragraph busName = new Paragraph(busNameStr, headerFont);
             businessCell.addElement(busName);
 
-            if (business.getAddress() != null) businessCell.addElement(new Paragraph(business.getAddress(), normalFont));
-            String cityState = (business.getCity() != null ? business.getCity() : "") + 
-                               (business.getState() != null ? ", " + business.getState() : "") +
-                               (business.getPincode() != null ? " - " + business.getPincode() : "");
-            if (!cityState.isBlank()) businessCell.addElement(new Paragraph(cityState, normalFont));
-            if (business.getPhone() != null) businessCell.addElement(new Paragraph("Phone: " + business.getPhone(), normalFont));
-            if (business.getEmail() != null) businessCell.addElement(new Paragraph("Email: " + business.getEmail(), normalFont));
-            if (business.getGstNumber() != null && !business.getGstNumber().isBlank()) {
-                businessCell.addElement(new Paragraph("GSTIN: " + business.getGstNumber(), boldFont));
+            if (business != null) {
+                if (business.getAddress() != null) businessCell.addElement(new Paragraph(business.getAddress(), normalFont));
+                String cityState = (business.getCity() != null ? business.getCity() : "") + 
+                                   (business.getState() != null ? ", " + business.getState() : "") +
+                                   (business.getPincode() != null ? " - " + business.getPincode() : "");
+                if (!cityState.isBlank()) businessCell.addElement(new Paragraph(cityState, normalFont));
+                if (business.getPhone() != null) businessCell.addElement(new Paragraph("Phone: " + business.getPhone(), normalFont));
+                if (business.getEmail() != null) businessCell.addElement(new Paragraph("Email: " + business.getEmail(), normalFont));
+                if (business.getGstNumber() != null && !business.getGstNumber().isBlank()) {
+                    businessCell.addElement(new Paragraph("GSTIN: " + business.getGstNumber(), boldFont));
+                }
             }
             headerTable.addCell(businessCell);
 
@@ -82,7 +90,8 @@ public class PdfGeneratorService {
             qTitle.setAlignment(Element.ALIGN_RIGHT);
             metaCell.addElement(qTitle);
 
-            Paragraph qNum = new Paragraph("# " + quotation.getQuotationNumber(), subTitleFont);
+            String qNumStr = quotation.getQuotationNumber() != null ? quotation.getQuotationNumber() : "QT-0001";
+            Paragraph qNum = new Paragraph("# " + qNumStr, subTitleFont);
             qNum.setAlignment(Element.ALIGN_RIGHT);
             metaCell.addElement(qNum);
 
@@ -94,7 +103,8 @@ public class PdfGeneratorService {
             qValid.setAlignment(Element.ALIGN_RIGHT);
             metaCell.addElement(qValid);
 
-            Paragraph qStatus = new Paragraph("Status: " + quotation.getStatus().name(), boldFont);
+            String statusStr = quotation.getStatus() != null ? quotation.getStatus().name() : "DRAFT";
+            Paragraph qStatus = new Paragraph("Status: " + statusStr, boldFont);
             qStatus.setAlignment(Element.ALIGN_RIGHT);
             metaCell.addElement(qStatus);
 
@@ -113,14 +123,22 @@ public class PdfGeneratorService {
             custCell.setPadding(10);
 
             custCell.addElement(new Paragraph("QUOTATION FOR:", boldFont));
-            custCell.addElement(new Paragraph(customer.getName() + (customer.getCompanyName() != null && !customer.getCompanyName().isBlank() ? " (" + customer.getCompanyName() + ")" : ""), subTitleFont));
-            if (customer.getAddress() != null) custCell.addElement(new Paragraph(customer.getAddress(), normalFont));
-            String custCityState = (customer.getCity() != null ? customer.getCity() : "") + 
-                                   (customer.getState() != null ? ", " + customer.getState() : "") +
-                                   (customer.getPincode() != null ? " - " + customer.getPincode() : "");
-            if (!custCityState.isBlank()) custCell.addElement(new Paragraph(custCityState, normalFont));
-            if (customer.getPhone() != null) custCell.addElement(new Paragraph("Phone: " + customer.getPhone(), normalFont));
-            if (customer.getEmail() != null) custCell.addElement(new Paragraph("Email: " + customer.getEmail(), normalFont));
+
+            String custNameStr = (customer != null && customer.getName() != null) ? customer.getName() : "Valued Customer";
+            String compNameStr = (customer != null && customer.getCompanyName() != null && !customer.getCompanyName().isBlank())
+                    ? " (" + customer.getCompanyName() + ")" : "";
+            
+            custCell.addElement(new Paragraph(custNameStr + compNameStr, subTitleFont));
+
+            if (customer != null) {
+                if (customer.getAddress() != null) custCell.addElement(new Paragraph(customer.getAddress(), normalFont));
+                String custCityState = (customer.getCity() != null ? customer.getCity() : "") + 
+                                       (customer.getState() != null ? ", " + customer.getState() : "") +
+                                       (customer.getPincode() != null ? " - " + customer.getPincode() : "");
+                if (!custCityState.isBlank()) custCell.addElement(new Paragraph(custCityState, normalFont));
+                if (customer.getPhone() != null) custCell.addElement(new Paragraph("Phone: " + customer.getPhone(), normalFont));
+                if (customer.getEmail() != null) custCell.addElement(new Paragraph("Email: " + customer.getEmail(), normalFont));
+            }
 
             custTable.addCell(custCell);
             document.add(custTable);
@@ -133,7 +151,7 @@ public class PdfGeneratorService {
             itemsTable.setWidths(new float[]{35, 10, 10, 15, 12, 18});
 
             // Table Header
-            String[] headers = {"Item & Description", "Qty", "Unit", "Unit Price", "Tax %", "Line Total (₹)"};
+            String[] headers = {"Item & Description", "Qty", "Unit", "Unit Price", "Tax %", "Line Total"};
             for (String h : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(h, whiteBoldFont));
                 cell.setBackgroundColor(secondaryColor);
@@ -148,7 +166,8 @@ public class PdfGeneratorService {
                     // Item Name & Description
                     PdfPCell descCell = new PdfPCell();
                     descCell.setPadding(6);
-                    descCell.addElement(new Paragraph(item.getItemName(), boldFont));
+                    String itemName = item.getItemName() != null ? item.getItemName() : "Service/Product";
+                    descCell.addElement(new Paragraph(itemName, boldFont));
                     if (item.getDescription() != null && !item.getDescription().isBlank()) {
                         descCell.addElement(new Paragraph(item.getDescription(), smallMutedFont));
                     }
@@ -167,19 +186,19 @@ public class PdfGeneratorService {
                     itemsTable.addCell(unitCell);
 
                     // Unit Price
-                    PdfPCell priceCell = new PdfPCell(new Phrase("₹" + CURRENCY_FORMAT.format(item.getUnitPrice()), normalFont));
+                    PdfPCell priceCell = new PdfPCell(new Phrase(formatAmount(item.getUnitPrice()), normalFont));
                     priceCell.setPadding(6);
                     priceCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     itemsTable.addCell(priceCell);
 
                     // Tax %
-                    PdfPCell taxCell = new PdfPCell(new Phrase(item.getTaxPercentage() + "%", normalFont));
+                    PdfPCell taxCell = new PdfPCell(new Phrase((item.getTaxPercentage() != null ? item.getTaxPercentage() : BigDecimal.ZERO) + "%", normalFont));
                     taxCell.setPadding(6);
                     taxCell.setHorizontalAlignment(Element.ALIGN_CENTER);
                     itemsTable.addCell(taxCell);
 
                     // Line Total
-                    PdfPCell totalCell = new PdfPCell(new Phrase("₹" + CURRENCY_FORMAT.format(item.getLineTotal()), boldFont));
+                    PdfPCell totalCell = new PdfPCell(new Phrase(formatAmount(item.getLineTotal()), boldFont));
                     totalCell.setPadding(6);
                     totalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     itemsTable.addCell(totalCell);
@@ -196,14 +215,14 @@ public class PdfGeneratorService {
             summaryTable.setHorizontalAlignment(Element.ALIGN_RIGHT);
             summaryTable.setWidths(new float[]{50, 50});
 
-            addSummaryRow(summaryTable, "Subtotal:", "₹" + CURRENCY_FORMAT.format(quotation.getSubtotal()), normalFont);
+            addSummaryRow(summaryTable, "Subtotal:", formatAmount(quotation.getSubtotal()), normalFont);
 
             if (quotation.getDiscountAmount() != null && quotation.getDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
-                addSummaryRow(summaryTable, "Discount:", "- ₹" + CURRENCY_FORMAT.format(quotation.getDiscountAmount()), normalFont);
+                addSummaryRow(summaryTable, "Discount:", "- " + formatAmount(quotation.getDiscountAmount()), normalFont);
             }
 
-            addSummaryRow(summaryTable, "Tax Amount:", "₹" + CURRENCY_FORMAT.format(quotation.getTaxAmount()), normalFont);
-            addSummaryRow(summaryTable, "Grand Total:", "₹" + CURRENCY_FORMAT.format(quotation.getGrandTotal()), titleFont);
+            addSummaryRow(summaryTable, "Tax Amount:", formatAmount(quotation.getTaxAmount()), normalFont);
+            addSummaryRow(summaryTable, "Grand Total:", formatAmount(quotation.getGrandTotal()), titleFont);
 
             document.add(summaryTable);
 
@@ -217,7 +236,7 @@ public class PdfGeneratorService {
             // Bank Details Cell
             PdfPCell bankCell = new PdfPCell();
             bankCell.setBorder(Rectangle.NO_BORDER);
-            if (business.getBankName() != null && !business.getBankName().isBlank()) {
+            if (business != null && business.getBankName() != null && !business.getBankName().isBlank()) {
                 bankCell.addElement(new Paragraph("BANK & PAYMENT DETAILS", boldFont));
                 bankCell.addElement(new Paragraph("Bank Name: " + business.getBankName(), normalFont));
                 if (business.getBankAccountNumber() != null) bankCell.addElement(new Paragraph("A/C No: " + business.getBankAccountNumber(), normalFont));
@@ -229,7 +248,7 @@ public class PdfGeneratorService {
             PdfPCell sigCell = new PdfPCell();
             sigCell.setBorder(Rectangle.NO_BORDER);
             sigCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            sigCell.addElement(new Paragraph("For " + business.getBusinessName(), boldFont));
+            sigCell.addElement(new Paragraph("For " + busNameStr, boldFont));
             sigCell.addElement(new Paragraph("\n\n_______________________\nAuthorized Signatory", normalFont));
             bottomTable.addCell(sigCell);
 
@@ -258,12 +277,19 @@ public class PdfGeneratorService {
     }
 
     public String generateSanitizedFilename(Quotation quotation) {
-        String number = quotation.getQuotationNumber() != null ? quotation.getQuotationNumber() : "QT-000";
-        String customerName = quotation.getCustomer() != null && quotation.getCustomer().getName() != null 
-                ? quotation.getCustomer().getName() : "Customer";
+        String number = quotation != null && quotation.getQuotationNumber() != null ? quotation.getQuotationNumber() : "QT-000";
+        Customer customer = quotation != null ? quotation.getCustomer() : null;
+        String customerName = customer != null && customer.getName() != null ? customer.getName() : "Customer";
         
         String safeCustomer = customerName.replaceAll("[^a-zA-Z0-9.-]", "-").replaceAll("-+", "-");
         return String.format("%s-%s.pdf", number, safeCustomer);
+    }
+
+    private String formatAmount(BigDecimal val) {
+        if (val == null) {
+            return "Rs. 0.00";
+        }
+        return "Rs. " + CURRENCY_FORMAT.format(val);
     }
 
     private void addSummaryRow(PdfPTable table, String label, String value, Font font) {
