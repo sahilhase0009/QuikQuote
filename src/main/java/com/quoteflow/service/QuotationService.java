@@ -23,19 +23,22 @@ public class QuotationService {
     private final QuotationCalculationService calculationService;
     private final QuotationNumberGenerator numberGenerator;
     private final SecurityUtil securityUtil;
+    private final com.quoteflow.pdf.PdfGeneratorService pdfGeneratorService;
 
     public QuotationService(QuotationRepository quotationRepository,
                             CustomerRepository customerRepository,
                             ProductRepository productRepository,
                             QuotationCalculationService calculationService,
                             QuotationNumberGenerator numberGenerator,
-                            SecurityUtil securityUtil) {
+                            SecurityUtil securityUtil,
+                            com.quoteflow.pdf.PdfGeneratorService pdfGeneratorService) {
         this.quotationRepository = quotationRepository;
         this.customerRepository = customerRepository;
         this.productRepository = productRepository;
         this.calculationService = calculationService;
         this.numberGenerator = numberGenerator;
         this.securityUtil = securityUtil;
+        this.pdfGeneratorService = pdfGeneratorService;
     }
 
     @Transactional(readOnly = true)
@@ -79,6 +82,27 @@ public class QuotationService {
             return quotationRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + id));
         }
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] generatePdfForQuotation(Long id) {
+        Quotation quotation = getQuotationEntityForPdf(id);
+        // Force initialization of lazy proxies within active database session
+        if (quotation.getBusiness() != null) {
+            quotation.getBusiness().getBusinessName();
+            quotation.getBusiness().getAddress();
+        }
+        if (quotation.getCustomer() != null) {
+            quotation.getCustomer().getName();
+            quotation.getCustomer().getAddress();
+        }
+        if (quotation.getItems() != null) {
+            quotation.getItems().forEach(item -> {
+                item.getItemName();
+                item.getUnitPrice();
+            });
+        }
+        return pdfGeneratorService.generateQuotationPdf(quotation);
     }
 
     @Transactional

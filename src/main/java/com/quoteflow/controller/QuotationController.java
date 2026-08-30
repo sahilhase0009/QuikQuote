@@ -150,7 +150,7 @@ public class QuotationController {
     public ResponseEntity<byte[]> downloadPdf(@PathVariable("id") Long id,
                                               @RequestParam(value = "inline", required = false, defaultValue = "true") boolean inline) {
         Quotation quotation = quotationService.getQuotationEntityForPdf(id);
-        byte[] pdfBytes = pdfGeneratorService.generateQuotationPdf(quotation);
+        byte[] pdfBytes = quotationService.generatePdfForQuotation(id);
         String filename = pdfGeneratorService.generateSanitizedFilename(quotation);
 
         String disposition = inline ? "inline" : "attachment";
