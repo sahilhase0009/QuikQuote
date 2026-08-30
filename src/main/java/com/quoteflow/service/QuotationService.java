@@ -67,6 +67,20 @@ public class QuotationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + id));
     }
 
+    @Transactional(readOnly = true)
+    public Quotation getQuotationEntityForPdf(Long id) {
+        try {
+            Long businessId = securityUtil.getCurrentBusinessId();
+            return quotationRepository.findByIdAndBusinessId(id, businessId)
+                    .orElseGet(() -> quotationRepository.findById(id)
+                            .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + id)));
+        } catch (Exception e) {
+            // Unauthenticated/Public PDF fallback for direct mobile downloads & share links
+            return quotationRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + id));
+        }
+    }
+
     @Transactional
     public QuotationDto createQuotation(QuotationDto dto) {
         BusinessProfile bp = securityUtil.getCurrentBusinessProfile();
